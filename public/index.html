@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Leave requests</title>
+<link rel="icon" href="/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --brand:#3B2F84; --deep:#12082E; --indigo:#5460B4; --teal:#2E8AA6;
+  --ink:#12082E; --ink60:#615C78; --ink30:#9B96AC;
+  --paper:#F4F4F9; --card:#fff; --rule:#E2E0EE;
+  --pend:#B8862F; --ok:#1F7A6B; --no:#B03030; --sick:#5460B4;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'IBM Plex Sans',system-ui,sans-serif;color:var(--ink);
+  background:var(--paper);-webkit-font-smoothing:antialiased;line-height:1.55}
+[dir=rtl] body,[dir=rtl] input,[dir=rtl] select,[dir=rtl] button{
+  font-family:'IBM Plex Sans Arabic','IBM Plex Sans',system-ui,sans-serif}
+button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
+button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{
+  outline:2px solid var(--brand);outline-offset:2px}
+input,select{font:inherit;color:inherit;background:var(--card);border:1px solid var(--rule);
+  border-radius:3px;padding:.55rem .7rem;width:100%}
+input:hover,select:hover{border-color:#C9C5DC}
+.num{font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums}
+.btn{background:var(--brand);color:#fff;padding:.55rem 1.1rem;border-radius:3px;font-weight:500}
+.btn:hover{background:#2E2468}
+.btn.ghost{background:none;color:var(--brand);border:1px solid var(--rule)}
+.btn.ghost:hover{border-color:var(--brand)}
+.btn.sm{padding:.34rem .75rem;font-size:.82rem}
+.btn.ok{background:var(--ok)} .btn.ok:hover{background:#186252}
+.btn.no{background:var(--no)} .btn.no:hover{background:#8F2A2A}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+label{display:block;font-size:.78rem;color:var(--ink60);margin-bottom:.32rem}
+.err{color:var(--no);font-size:.84rem} .warn{color:var(--pend);font-size:.84rem}
+.sub{font-size:.82rem;color:var(--ink60);font-weight:300}
+
+/* ── identity ── */
+.crest{display:block;flex-shrink:0;line-height:0}
+.crest img{display:block;height:44px;width:auto}
+.grad{height:3px;background:linear-gradient(90deg,var(--brand),var(--indigo),var(--teal))}
+[dir=rtl] .grad{background:linear-gradient(270deg,var(--brand),var(--indigo),var(--teal))}
+
+/* ── gate ── */
+.gate{min-height:100vh;display:grid;grid-template-rows:auto auto 1fr auto}
+.gatetop{background:var(--card);padding:.95rem 1.5rem;border-bottom:1px solid var(--rule)}
+.gatetop .inner{max-width:1080px;margin:0 auto;display:flex;justify-content:space-between;
+  align-items:center;gap:1rem;flex-wrap:wrap}
+.gatemid{display:grid;place-items:center;padding:2.75rem 1.25rem}
+.gatebox{width:100%;max-width:390px}
+.gatehead{padding-bottom:.9rem;border-bottom:2px solid var(--brand);margin-bottom:1.5rem}
+.gatehead h1{font-size:1.35rem;font-weight:600;letter-spacing:-.02em;color:var(--brand)}
+.gatehead p{font-size:.85rem;color:var(--ink60);font-weight:300;margin-top:.25rem}
+.gatefoot{padding:1.3rem 1.5rem;text-align:center;font-size:.75rem;color:var(--ink30);font-weight:300}
+.field{margin-bottom:.95rem}
+
+/* ── shell ── */
+.bar{background:var(--card);border-bottom:1px solid var(--rule)}
+.barin{max-width:1080px;margin:0 auto;padding:.8rem 1.5rem;display:flex;
+  justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap}
+.barme{font-size:.82rem;display:flex;gap:.55rem;align-items:center;flex-wrap:wrap}
+.whoami{color:var(--ink60)}
+.wrap{max-width:1080px;margin:0 auto;padding:1.6rem 1.5rem 4rem}
+nav{display:flex;gap:.15rem;border-bottom:1px solid var(--rule);margin-bottom:1.6rem;flex-wrap:wrap}
+nav button{padding:.62rem .9rem;font-size:.88rem;color:var(--ink60);
+  border-bottom:2px solid transparent;margin-bottom:-1px}
+nav button:hover{color:var(--ink)}
+nav button[aria-selected="true"]{color:var(--brand);font-weight:500;border-bottom-color:var(--brand)}
+nav .count{font-family:'IBM Plex Mono',monospace;font-size:.72rem;background:var(--teal);
+  color:#fff;border-radius:9px;padding:.05rem .42rem;margin-inline-start:.4rem;font-weight:500}
+h2{font-size:.95rem;font-weight:600;margin:1.9rem 0 .8rem}
+h2:first-child{margin-top:0}
+.panel{background:var(--card);border:1px solid var(--rule);border-radius:4px;padding:1.2rem}
+.panel.lead{border-inline-start:3px solid var(--brand)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:.9rem}
+.calc{font-size:.85rem;padding:.72rem .85rem;background:#F7F6FB;border:1px solid var(--rule);
+  border-radius:3px;margin-top:.95rem}
+
+/* ── coverage ── */
+.cov{background:var(--card);border:1px solid var(--rule);border-radius:4px;padding:1.05rem 1.15rem}
+.covhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:.95rem;
+  gap:.5rem;flex-wrap:wrap}
+.covmonth{font-weight:600}
+.row{display:grid;grid-template-columns:132px 1fr;gap:.75rem;align-items:center;margin-bottom:.3rem}
+.who{font-size:.82rem;color:var(--ink60);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.strip{display:flex;gap:1px;height:22px}
+[dir=rtl] .strip,[dir=rtl] .ticks{flex-direction:row-reverse}
+.cell{flex:1;background:#EFEEF6;border-radius:1px}
+.cell.we{background:#E1DFEC}
+.cell.annual{background:var(--ok)} .cell.sick{background:var(--sick)}
+.cell.pend{opacity:.34}
+.scale{display:grid;grid-template-columns:132px 1fr;gap:.75rem;margin-top:.35rem}
+.ticks{display:flex;gap:1px}
+.tick{flex:1;text-align:center;font-size:.6rem;color:var(--ink30)}
+.legend{display:flex;gap:1.15rem;flex-wrap:wrap;font-size:.75rem;color:var(--ink60);
+  margin-top:.95rem;padding-top:.85rem;border-top:1px solid var(--rule)}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:1px;
+  margin-inline-end:.38rem;vertical-align:-1px}
+
+/* ── request rows ── */
+.req{display:grid;grid-template-columns:4px 1fr auto;gap:.95rem;background:var(--card);
+  border:1px solid var(--rule);border-radius:4px;margin-bottom:.5rem;overflow:hidden}
+.tag{background:var(--pend)} .tag.approved{background:var(--ok)} .tag.rejected{background:var(--no)}
+.reqbody{padding:.88rem 0;min-width:0}
+.reqname{font-weight:500}
+.reqmeta{font-size:.8rem;color:var(--ink60)}
+.reqnote{font-size:.82rem;color:var(--ink60);margin-top:.3rem;font-weight:300}
+.reqact{display:flex;gap:.4rem;align-items:center;
+  padding-block:.88rem;padding-inline-end:1rem;flex-shrink:0}
+.state{font-size:.78rem;font-weight:500}
+.state.approved{color:var(--ok)} .state.rejected{color:var(--no)} .state.pending{color:var(--pend)}
+.empty{padding:2.5rem 1rem;text-align:center;color:var(--ink60);font-weight:300;
+  background:var(--card);border:1px dashed var(--rule);border-radius:4px}
+
+/* ── table & balances ── */
+table{width:100%;border-collapse:collapse;background:var(--card);
+  border:1px solid var(--rule);border-radius:4px;overflow:hidden}
+th{text-align:start;font-size:.76rem;font-weight:500;color:var(--ink60);
+  padding:.65rem .85rem;border-bottom:1px solid var(--rule);background:#FAF9FD}
+td{padding:.68rem .85rem;font-size:.87rem;border-bottom:1px solid var(--rule)}
+tr:last-child td{border-bottom:none}
+.bal{display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:.6rem}
+.balcard{background:var(--card);border:1px solid var(--rule);border-radius:4px;padding:.9rem 1rem}
+.balname{font-size:.85rem;font-weight:500;margin-bottom:.45rem}
+.balnum{display:flex;align-items:baseline;gap:.35rem}
+.balnum b{font-size:1.6rem;font-weight:600;letter-spacing:-.02em;color:var(--brand)}
+.balbar{height:4px;background:#E8E6F1;border-radius:2px;margin-top:.6rem;overflow:hidden}
+.balbar i{display:block;height:100%;background:var(--ok)}
+.note{font-size:.75rem;color:var(--ink30);margin-top:1.7rem;font-weight:300}
+.toast{position:fixed;inset-inline:0;bottom:1.5rem;margin-inline:auto;width:max-content;
+  max-width:90vw;background:var(--deep);color:#fff;padding:.62rem 1.15rem;border-radius:3px;
+  font-size:.85rem;z-index:99;box-shadow:0 4px 16px rgba(18,8,46,.25)}
+@media(max-width:640px){
+  .crest img{height:34px}
+  .row,.scale{grid-template-columns:78px 1fr}
+  .req{grid-template-columns:4px 1fr}
+  .reqact{grid-column:2;padding-block:0 .88rem;padding-inline:1rem}
+  table{display:block;overflow-x:auto}
+}
+</style>
+</head>
+<body>
+<div id="app"><div class="gate"><div class="gatemid"><p class="sub">…</p></div></div></div>
+
+<script>
+/* ── translations ──────────────────────────────────────── */
+const T = {
+en:{
+ org:"National Center for Inspection & Monitoring",
+ sys:"Leave requests",
+ setupTitle:"Set up the portal", setupLead:"No accounts yet. Create the manager account to begin.",
+ yourName:"Your name", yourId:"Your employee ID", choosePw:"Choose a password",
+ createAdmin:"Create manager account",
+ setupNote:"You'll add the rest of the team from inside, each with their own ID.",
+ signInTitle:"Sign in", signInLead:"Use the employee ID and password you were given.",
+ empId:"Employee ID", password:"Password", signIn:"Sign in", signOut:"Sign out",
+ changePw:"Change password",
+ tabRaise:"Raise a request", tabApprovals:"Approvals", tabAway:"Who is away", tabTeam:"Team",
+ raiseTitle:"Raise a request", leaveType:"Leave type", annual:"Annual", sick:"Sick",
+ firstDay:"First day away", lastDay:"Last day away", noteLbl:"Reason or handover note",
+ optional:"Optional", send:"Send for approval",
+ pickDates:"Pick both dates to see how many working days this uses.",
+ backwards:"The last day is before the first day.",
+ workingDay:"working day", workingDays:"working days",
+ notCounted:"Friday and Saturday not counted.",
+ leavesYou:"Leaves you", of:"of",
+ over:n=>`That is ${n} more than you have left. You can still send it; the manager will see the shortfall.`,
+ overlaps:"Overlaps with", listSep:", ",
+ myRequests:"My requests", annualLeft:n=>`${n.left} of ${n.all} annual days left`,
+ nothingYet:"Nothing yet. Your requests and their decisions appear here.",
+ waiting:"Waiting on you", nothingWaiting:"Nothing waiting. New requests land here.",
+ decided:"Recently decided", noDecisions:"No decisions yet.", downloadCsv:"download all as CSV",
+ addSomeone:"Add someone", name:"Name",
+ idHint:"They sign in with this", pwHint:"At least 6 characters",
+ daysAYear:"Annual days a year", addToTeam:"Add to team",
+ team:"Team", access:"Access", manager:"Manager", member:"Team member",
+ annualLeftCol:"Annual left", resetPw:"Reset password", remove:"Remove", you:"You",
+ whoAway:"Who is away", earlier:"Earlier", thisMonth:"This month", later:"Later",
+ legAnnualOk:"Annual, approved", legAnnualPend:"Annual, pending",
+ legSickOk:"Sick, approved", legSickPend:"Sick, pending", legWeekend:"Weekend",
+ balances:"Annual leave left", approvedOnly:"approved days only", days:"days",
+ approve:"Approve", reject:"Reject", withdraw:"Withdraw",
+ pending:"Pending", approved:"Approved", rejected:"Rejected",
+ approvedBy:"Approved by", rejectedBy:"Rejected by",
+ to:"to", sent:"Sent for approval", pwChanged:"Password changed",
+ pwReset:"Password reset — share it with them",
+ addedOk:id=>`Added. They sign in with ID ${id}`,
+ confirmRemove:n=>`Remove ${n}? Their past requests stay in the records.`,
+ promptCur:"Current password:", promptNew:"New password (at least 6 characters):",
+ promptReset:"New password for this person (at least 6 characters):",
+ footNote:"Working days exclude Friday and Saturday. Sick leave does not come off the annual balance.",
+ noServer:"Can't reach the server. Is it still running?",
+ loading:"Loading…", lang:"العربية"
+},
+ar:{
+ org:"المركز الوطني للتفتيش والرقابة",
+ sys:"طلبات الإجازات",
+ setupTitle:"تهيئة البوابة", setupLead:"لا توجد حسابات بعد. أنشئ حساب المدير للبدء.",
+ yourName:"الاسم", yourId:"الرقم الوظيفي", choosePw:"اختر كلمة المرور",
+ createAdmin:"إنشاء حساب المدير",
+ setupNote:"ستضيف بقية الفريق من داخل البوابة، لكل شخص رقمه الوظيفي.",
+ signInTitle:"تسجيل الدخول", signInLead:"استخدم الرقم الوظيفي وكلمة المرور المسلّمة لك.",
+ empId:"الرقم الوظيفي", password:"كلمة المرور", signIn:"دخول", signOut:"خروج",
+ changePw:"تغيير كلمة المرور",
+ tabRaise:"رفع طلب", tabApprovals:"الاعتمادات", tabAway:"من في إجازة", tabTeam:"الفريق",
+ raiseTitle:"رفع طلب إجازة", leaveType:"نوع الإجازة", annual:"سنوية", sick:"مرضية",
+ firstDay:"أول يوم إجازة", lastDay:"آخر يوم إجازة", noteLbl:"السبب أو ملاحظة التسليم",
+ optional:"اختياري", send:"إرسال للاعتماد",
+ pickDates:"اختر التاريخين لحساب عدد أيام العمل.",
+ backwards:"تاريخ النهاية قبل تاريخ البداية.",
+ workingDay:"يوم عمل", workingDays:"أيام عمل",
+ notCounted:"الجمعة والسبت غير محتسبين.",
+ leavesYou:"يتبقى لك", of:"من",
+ over:n=>`هذا يزيد ${n} يومًا عن رصيدك. يمكنك الإرسال، وسيظهر العجز للمدير.`,
+ overlaps:"يتقاطع مع", listSep:"، ",
+ myRequests:"طلباتي", annualLeft:n=>`${n.left} من ${n.all} يوم إجازة سنوية`,
+ nothingYet:"لا توجد طلبات بعد. ستظهر طلباتك وقراراتها هنا.",
+ waiting:"بانتظار قرارك", nothingWaiting:"لا يوجد ما ينتظر. الطلبات الجديدة تظهر هنا.",
+ decided:"قرارات حديثة", noDecisions:"لا توجد قرارات بعد.", downloadCsv:"تحميل الكل كملف CSV",
+ addSomeone:"إضافة موظف", name:"الاسم",
+ idHint:"يسجّل الدخول به", pwHint:"6 أحرف على الأقل",
+ daysAYear:"الرصيد السنوي بالأيام", addToTeam:"إضافة للفريق",
+ team:"الفريق", access:"الصلاحية", manager:"مدير", member:"عضو فريق",
+ annualLeftCol:"الرصيد المتبقي", resetPw:"إعادة تعيين كلمة المرور", remove:"حذف", you:"أنت",
+ whoAway:"من في إجازة", earlier:"السابق", thisMonth:"هذا الشهر", later:"التالي",
+ legAnnualOk:"سنوية معتمدة", legAnnualPend:"سنوية قيد الاعتماد",
+ legSickOk:"مرضية معتمدة", legSickPend:"مرضية قيد الاعتماد", legWeekend:"نهاية الأسبوع",
+ balances:"الرصيد السنوي المتبقي", approvedOnly:"الأيام المعتمدة فقط", days:"يوم",
+ approve:"اعتماد", reject:"رفض", withdraw:"سحب الطلب",
+ pending:"قيد الاعتماد", approved:"معتمد", rejected:"مرفوض",
+ approvedBy:"اعتمده", rejectedBy:"رفضه",
+ to:"إلى", sent:"أُرسل للاعتماد", pwChanged:"تم تغيير كلمة المرور",
+ pwReset:"أُعيد تعيين كلمة المرور — سلّمها له",
+ addedOk:id=>`تمت الإضافة. يسجّل الدخول بالرقم ${id}`,
+ confirmRemove:n=>`حذف ${n}؟ تبقى طلباته السابقة في السجل.`,
+ promptCur:"كلمة المرور الحالية:", promptNew:"كلمة المرور الجديدة (6 أحرف على الأقل):",
+ promptReset:"كلمة مرور جديدة لهذا الشخص (6 أحرف على الأقل):",
+ footNote:"أيام العمل لا تشمل الجمعة والسبت. الإجازة المرضية لا تُخصم من الرصيد السنوي.",
+ noServer:"تعذّر الوصول للخادم. هل ما زال يعمل؟",
+ loading:"جارٍ التحميل…", lang:"English"
+}};
+
+let LANG = (navigator.language||"en").startsWith("ar") ? "ar" : "en";
+try{ const s=localStorage.getItem("lp_lang"); if(s) LANG=s; }catch{}
+const t = k => T[LANG][k];
+const LOC = () => LANG==="ar" ? "ar-SA-u-nu-latn" : "en-GB";
+
+function setLang(l){
+  LANG=l; try{localStorage.setItem("lp_lang",l);}catch{}
+  applyLang(); render();
+}
+function applyLang(){
+  document.documentElement.lang=LANG;
+  document.documentElement.dir=LANG==="ar"?"rtl":"ltr";
+  document.title=t("sys");
+}
+
+/* ── state & helpers ───────────────────────────────────── */
+const WEEKEND=[5,6];
+let S={}, TAB="raise", ANCHOR=new Date(), TOAST=null, ERR="";
+
+const $=s=>document.getElementById(s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const iso=d=>d.toISOString().slice(0,10);
+const parse=s=>{const[y,m,d]=s.split("-").map(Number);return new Date(y,m-1,d);};
+const fmt=s=>parse(s).toLocaleDateString(LOC(),{day:"numeric",month:"short"});
+function workdays(a,b){let s=parse(a),e=parse(b),n=0;if(e<s)return 0;
+  while(s<=e){if(!WEEKEND.includes(s.getDay()))n++;s.setDate(s.getDate()+1);}return n;}
+function span(a,b){const o=[];let s=parse(a),e=parse(b);
+  while(s<=e){o.push(iso(s));s.setDate(s.getDate()+1);}return o;}
+function used(id){return (S.requests||[]).filter(r=>r.uid===id&&r.type==="annual"&&r.status==="approved")
+  .reduce((n,r)=>n+r.days,0);}
+function toast(m){TOAST=m;render();setTimeout(()=>{TOAST=null;render();},2800);}
+const dayWord=n=>n===1?t("workingDay"):t("workingDays");
+
+async function call(url,opt={}){
+  const r=await fetch(url,{headers:{"Content-Type":"application/json"},...opt});
+  let j={}; try{ j=await r.json(); }catch{}
+  if(!r.ok) throw new Error(j.error||"Something went wrong.");
+  return j;
+}
+async function refresh(){ S=await call("/api/state"); render(); }
+
+/* ── pieces ────────────────────────────────────────────── */
+const crest = () =>
+  `<a class="crest" href="/" aria-label="${esc(t("org"))}"><img src="/logo.png" alt="${esc(t("org"))}"></a>`;
+const langBtn = () =>
+  `<button class="btn ghost sm" onclick="setLang('${LANG==="ar"?"en":"ar"}')">${t("lang")}</button>`;
+
+function gateShell(inner){
+  return `<div class="gate">
+    <div class="gatetop"><div class="inner">${crest()}${langBtn()}</div></div>
+    <div class="grad"></div>
+    <div class="gatemid"><div class="gatebox">${inner}</div></div>
+    <div class="gatefoot">${esc(t("org"))}</div></div>`;
+}
+
+function setupScreen(){
+  return gateShell(`
+    <div class="gatehead"><h1>${t("setupTitle")}</h1><p>${t("setupLead")}</p></div>
+    <div class="field"><label for="sn">${t("yourName")}</label><input id="sn" autocomplete="name"></div>
+    <div class="field"><label for="si">${t("yourId")}</label><input id="si" class="num"></div>
+    <div class="field"><label for="sp">${t("choosePw")}</label>
+      <input id="sp" type="password" autocomplete="new-password"></div>
+    <p class="err" style="margin-bottom:.85rem">${esc(ERR)}</p>
+    <button class="btn" style="width:100%" onclick="doSetup()">${t("createAdmin")}</button>
+    <p class="note" style="margin-top:1rem">${t("setupNote")}</p>`);
+}
+
+function loginScreen(){
+  return gateShell(`
+    <div class="gatehead"><h1>${t("signInTitle")}</h1><p>${t("signInLead")}</p></div>
+    <div class="field"><label for="li">${t("empId")}</label>
+      <input id="li" class="num" autocomplete="username" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <div class="field"><label for="lp">${t("password")}</label>
+      <input id="lp" type="password" autocomplete="current-password"
+        onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <p class="err" style="margin-bottom:.85rem">${esc(ERR)}</p>
+    <button class="btn" style="width:100%" onclick="doLogin()">${t("signIn")}</button>`);
+}
+
+function coverage(){
+  const y=ANCHOR.getFullYear(),m=ANCHOR.getMonth(),last=new Date(y,m+1,0).getDate();
+  const days=Array.from({length:last},(_,i)=>{const d=new Date(y,m,i+1);
+    return{k:iso(d),n:i+1,we:WEEKEND.includes(d.getDay())};});
+  const map={};
+  S.requests.filter(r=>r.status!=="rejected").forEach(r=>{
+    span(r.from,r.to).forEach(d=>{(map[r.uid]??={})[d]={t:r.type,p:r.status==="pending"};});});
+  return `<div class="cov"><div class="covhead">
+    <span class="covmonth">${ANCHOR.toLocaleDateString(LOC(),{month:"long",year:"numeric"})}</span>
+    <span style="display:flex;gap:.4rem">
+      <button class="btn ghost sm" onclick="shift(-1)">${t("earlier")}</button>
+      <button class="btn ghost sm" onclick="shift(0)">${t("thisMonth")}</button>
+      <button class="btn ghost sm" onclick="shift(1)">${t("later")}</button></span></div>
+    ${S.users.map(u=>`<div class="row"><span class="who">${esc(u.name)}</span>
+      <div class="strip">${days.map(d=>{const h=map[u.id]?.[d.k];
+        return `<div class="cell ${d.we?"we":""} ${h?h.t:""} ${h&&h.p?"pend":""}"
+          title="${esc(u.name)} — ${fmt(d.k)}"></div>`;}).join("")}</div></div>`).join("")}
+    <div class="scale"><span></span><div class="ticks">${
+      days.map(d=>`<span class="tick num">${d.n%5===0||d.n===1?d.n:""}</span>`).join("")}</div></div>
+    <div class="legend">
+      <span><i style="background:var(--ok)"></i>${t("legAnnualOk")}</span>
+      <span><i style="background:var(--ok);opacity:.34"></i>${t("legAnnualPend")}</span>
+      <span><i style="background:var(--sick)"></i>${t("legSickOk")}</span>
+      <span><i style="background:var(--sick);opacity:.34"></i>${t("legSickPend")}</span>
+      <span><i style="background:#E1DFEC"></i>${t("legWeekend")}</span></div></div>`;
+}
+
+function reqRow(r,canDecide){
+  const mine=r.uid===S.me.id;
+  const act=r.status==="pending"&&canDecide
+    ?`<button class="btn ok sm" onclick="decide('${r.id}','approved')">${t("approve")}</button>
+      <button class="btn no sm" onclick="decide('${r.id}','rejected')">${t("reject")}</button>`
+    :r.status==="pending"&&mine
+    ?`<button class="btn ghost sm" onclick="withdraw('${r.id}')">${t("withdraw")}</button>`
+    :`<span class="state ${r.status}">${t(r.status)}</span>`;
+  return `<div class="req"><div class="tag ${r.status}"></div><div class="reqbody">
+    <div><span class="reqname">${esc(r.name)}</span><span class="reqmeta"> · ${t(r.type)} ·
+      <span class="num">${r.days}</span> ${dayWord(r.days)} · ${fmt(r.from)} ${t("to")} ${fmt(r.to)}</span></div>
+    ${r.note?`<div class="reqnote">${esc(r.note)}</div>`:""}
+    ${r.by?`<div class="reqnote">${r.status==="approved"?t("approvedBy"):t("rejectedBy")} ${esc(r.by)}</div>`:""}
+    </div><div class="reqact">${act}</div></div>`;
+}
+
+function raiseTab(){
+  const u=S.users.find(x=>x.id===S.me.id), left=u.allowance-used(u.id);
+  const mine=S.requests.filter(r=>r.uid===S.me.id).sort((a,b)=>b.at-a.at);
+  return `<h2>${t("raiseTitle")}</h2><div class="panel lead">
+    <div class="grid">
+      <div><label for="ft">${t("leaveType")}</label><select id="ft" onchange="preview()">
+        <option value="annual">${t("annual")}</option><option value="sick">${t("sick")}</option></select></div>
+      <div><label for="ff">${t("firstDay")}</label><input id="ff" type="date" oninput="preview()"></div>
+      <div><label for="ft2">${t("lastDay")}</label><input id="ft2" type="date" oninput="preview()"></div>
+      <div><label for="fn">${t("noteLbl")}</label><input id="fn" placeholder="${t("optional")}"></div>
+    </div>
+    <div class="calc" id="calc">${t("pickDates")}</div>
+    <div style="margin-top:1.05rem"><button class="btn" onclick="submitReq()">${t("send")}</button></div>
+  </div>
+  <h2>${t("myRequests")} <span class="sub">— ${t("annualLeft")({left,all:u.allowance})}</span></h2>
+  ${mine.length?mine.map(r=>reqRow(r,false)).join(""):`<div class="empty">${t("nothingYet")}</div>`}`;
+}
+
+function approvalsTab(){
+  const p=S.requests.filter(r=>r.status==="pending").sort((a,b)=>a.at-b.at);
+  const d=S.requests.filter(r=>r.status!=="pending").sort((a,b)=>b.at-a.at).slice(0,25);
+  return `<h2>${t("waiting")}</h2>
+    ${p.length?p.map(r=>reqRow(r,true)).join(""):`<div class="empty">${t("nothingWaiting")}</div>`}
+    <h2>${t("decided")} <span class="sub">— <a href="/api/export.csv"
+      style="color:var(--brand)">${t("downloadCsv")}</a></span></h2>
+    ${d.length?d.map(r=>reqRow(r,false)).join(""):`<div class="empty">${t("noDecisions")}</div>`}`;
+}
+
+function teamTab(){
+  return `<h2>${t("addSomeone")}</h2><div class="panel lead">
+    <div class="grid">
+      <div><label for="an">${t("name")}</label><input id="an"></div>
+      <div><label for="ai">${t("empId")}</label><input id="ai" class="num" placeholder="${t("idHint")}"></div>
+      <div><label for="ap">${t("password")}</label><input id="ap" placeholder="${t("pwHint")}"></div>
+      <div><label for="aa">${t("daysAYear")}</label>
+        <input id="aa" class="num" type="number" min="0" max="90" value="30"></div>
+    </div>
+    <div style="margin-top:1rem"><button class="btn" onclick="addUser()">${t("addToTeam")}</button></div>
+  </div>
+  <h2>${t("team")}</h2>
+  <table><thead><tr><th>${t("name")}</th><th>${t("empId")}</th><th>${t("access")}</th>
+    <th>${t("annualLeftCol")}</th><th></th></tr></thead>
+  <tbody>${S.users.map(u=>{const left=u.allowance-used(u.id);
+    return `<tr><td>${esc(u.name)}</td><td class="num">${esc(u.id)}</td>
+      <td>${u.admin?t("manager"):t("member")}</td>
+      <td class="num">${left} / ${u.allowance}</td>
+      <td>${u.id===S.me.id?`<span class="sub">${t("you")}</span>`
+        :`<button class="btn ghost sm" onclick="resetPw('${esc(u.id)}')">${t("resetPw")}</button>
+          <button class="btn ghost sm" onclick="removeUser('${esc(u.id)}','${esc(u.name)}')">${t("remove")}</button>`}
+      </td></tr>`;}).join("")}</tbody></table>`;
+}
+
+function awayTab(){
+  return `<h2>${t("whoAway")}</h2>${coverage()}
+  <h2>${t("balances")} <span class="sub">— ${t("approvedOnly")}</span></h2>
+  <div class="bal">${S.users.map(u=>{const left=u.allowance-used(u.id),
+    pct=Math.max(0,Math.min(100,left/u.allowance*100));
+    return `<div class="balcard"><div class="balname">${esc(u.name)}</div>
+      <div class="balnum"><b class="num">${left}</b>
+      <span class="sub">${t("of")} ${u.allowance} ${t("days")}</span></div>
+      <div class="balbar"><i style="width:${pct}%;background:${
+        left<=5?"var(--pend)":"var(--ok)"}"></i></div></div>`;}).join("")}</div>`;
+}
+
+function shell(){
+  const pend=S.requests.filter(r=>r.status==="pending").length;
+  const tabs=[["raise",t("tabRaise")]];
+  if(S.me.admin) tabs.push(["approvals",`${t("tabApprovals")}${
+    pend?`<span class="count">${pend}</span>`:""}`]);
+  tabs.push(["away",t("tabAway")]);
+  if(S.me.admin) tabs.push(["team",t("tabTeam")]);
+  const body=TAB==="raise"?raiseTab():TAB==="approvals"?approvalsTab()
+    :TAB==="team"?teamTab():awayTab();
+  return `<div class="bar"><div class="barin">${crest()}
+    <span class="barme"><span class="whoami">${esc(S.me.name)} ·
+      <span class="num">${esc(S.me.id)}</span>${S.me.admin?" · "+t("manager"):""}</span>
+      ${langBtn()}
+      <button class="btn ghost sm" onclick="changePw()">${t("changePw")}</button>
+      <button class="btn ghost sm" onclick="logout()">${t("signOut")}</button>
+    </span></div></div><div class="grad"></div>
+    <div class="wrap"><nav>${tabs.map(([k,l])=>
+      `<button aria-selected="${TAB===k}" onclick="go('${k}')">${l}</button>`).join("")}</nav>
+      ${body}<p class="note">${t("footNote")}</p></div>`;
+}
+
+/* ── actions ───────────────────────────────────────────── */
+function go(k){TAB=k;render();}
+function shift(n){ANCHOR=n===0?new Date():new Date(ANCHOR.getFullYear(),ANCHOR.getMonth()+n,1);render();}
+
+async function doSetup(){
+  ERR="";
+  try{ await call("/api/setup",{method:"POST",body:JSON.stringify({
+    name:$("sn").value,id:$("si").value,password:$("sp").value})}); await refresh(); }
+  catch(e){ ERR=e.message; render(); }
+}
+async function doLogin(){
+  ERR="";
+  try{ await call("/api/login",{method:"POST",body:JSON.stringify({
+    id:$("li").value,password:$("lp").value})}); await refresh(); }
+  catch(e){ ERR=e.message; render(); }
+}
+async function logout(){ await call("/api/logout",{method:"POST"}); TAB="raise"; await refresh(); }
+
+async function changePw(){
+  const cur=prompt(t("promptCur")); if(!cur) return;
+  const nxt=prompt(t("promptNew")); if(!nxt) return;
+  try{ await call("/api/me/password",{method:"POST",
+    body:JSON.stringify({current:cur,next:nxt})}); toast(t("pwChanged")); }
+  catch(e){ toast(e.message); }
+}
+
+function preview(){
+  const f=$("ff").value,to=$("ft2").value,type=$("ft").value,box=$("calc");
+  if(!f||!to){box.textContent=t("pickDates");return;}
+  if(parse(to)<parse(f)){box.innerHTML=`<span class="err">${t("backwards")}</span>`;return;}
+  const d=workdays(f,to),u=S.users.find(x=>x.id===S.me.id),left=u.allowance-used(u.id);
+  const clash=[...new Set(S.requests.filter(r=>r.uid!==S.me.id&&r.status!=="rejected")
+    .filter(r=>span(r.from,r.to).some(x=>span(f,to).includes(x))).map(r=>r.name))];
+  let h=`<span class="num"><b>${d}</b></span> ${dayWord(d)} — ${t("notCounted")}`;
+  if(type==="annual"){
+    h+=` ${t("leavesYou")} <span class="num">${left-d}</span> ${t("of")} <span class="num">${u.allowance}</span>.`;
+    if(d>left) h+=`<div class="err" style="margin-top:.42rem">${t("over")(d-left)}</div>`;
+  }
+  if(clash.length) h+=`<div class="warn" style="margin-top:.42rem">${t("overlaps")} ${
+    clash.map(esc).join(t("listSep"))}.</div>`;
+  box.innerHTML=h;
+}
+
+async function submitReq(){
+  try{ await call("/api/requests",{method:"POST",body:JSON.stringify({
+    type:$("ft").value,from:$("ff").value,to:$("ft2").value,note:$("fn").value})});
+    await refresh(); toast(t("sent")); }
+  catch(e){ toast(e.message); }
+}
+async function decide(id,status){
+  try{ await call(`/api/requests/${id}/decide`,{method:"POST",body:JSON.stringify({status})});
+    await refresh(); }catch(e){ toast(e.message); }
+}
+async function withdraw(id){
+  try{ await call(`/api/requests/${id}`,{method:"DELETE"}); await refresh(); }
+  catch(e){ toast(e.message); }
+}
+async function addUser(){
+  try{ const id=$("ai").value;
+    await call("/api/users",{method:"POST",body:JSON.stringify({
+      name:$("an").value,id,password:$("ap").value,allowance:$("aa").value})});
+    await refresh(); toast(t("addedOk")(id)); }
+  catch(e){ toast(e.message); }
+}
+async function resetPw(id){
+  const p=prompt(t("promptReset")); if(!p) return;
+  try{ await call(`/api/users/${encodeURIComponent(id)}/password`,{method:"POST",
+    body:JSON.stringify({password:p})}); toast(t("pwReset")); }
+  catch(e){ toast(e.message); }
+}
+async function removeUser(id,name){
+  if(!confirm(t("confirmRemove")(name))) return;
+  try{ await call(`/api/users/${encodeURIComponent(id)}`,{method:"DELETE"}); await refresh(); }
+  catch(e){ toast(e.message); }
+}
+
+/* ── render ────────────────────────────────────────────── */
+function render(){
+  $("app").innerHTML=(S.stage==="setup"?setupScreen():S.stage==="login"?loginScreen():
+    S.stage==="in"?shell():gateShell(`<p class="sub">${t("loading")}</p>`))
+    +(TOAST?`<div class="toast">${esc(TOAST)}</div>`:"");
+}
+applyLang();
+refresh().catch(()=>{ $("app").innerHTML=gateShell(`<p class="err">${t("noServer")}</p>`); });
+setInterval(()=>{ if(S.stage==="in") refresh().catch(()=>{}); }, 30000);
+</script>
+</body>
+</html>

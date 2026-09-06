@@ -1,0 +1,9 @@
+{
+  "name": "leave-portal",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Team annual and sick leave requests",
+  "main": "server.js",
+  "scripts": { "start": "node server.js" },
+  "engines": { "node": ">=18" }
+}
